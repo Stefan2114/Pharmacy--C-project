@@ -1,18 +1,11 @@
 #pragma once
 #include "repository.h"
-#include "Operation.h"
 
 
-typedef void(*AddFunction)(Repository*, Medicine*);
-typedef int(*RemoveFunction)(Repository*, char*, int, int);
-typedef int(*UpdateFunction)(Repository*, char*, int, int, int);
 typedef struct {
 	Repository* repository;
 	DynamicArray* undo;
 	DynamicArray* redo;
-	AddFunction addFct;
-	RemoveFunction removeFct;
-	UpdateFunction updateFct;
 
 }Service;
 

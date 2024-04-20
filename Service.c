@@ -3,8 +3,6 @@
 #include <string.h>
 void generateElems(Service* service);
 void saveUndo(Service* service);
-void saveUndoOperation(Service* service, Medicine* medicine, char* operationType);
-
 
 Service* createService(Repository* repository)
 {
@@ -19,9 +17,6 @@ Service* createService(Repository* repository)
 	//memento undo redo
 	DynamicArray* undo = createDynamicArray(10, &destroyDynamicArray);
 
-	//function pointer undo redo
-	//DynamicArray* undo = createDynamicArray(10, &destroyOperation);
-
 	if (undo == NULL)
 	{
 		destroyRepository(repository);
@@ -31,9 +26,6 @@ Service* createService(Repository* repository)
 
 	//memento undo redo
 	DynamicArray* redo = createDynamicArray(10, &destroyDynamicArray);
-
-	//function pointer undo redo
-	//DynamicArray* redo = createDynamicArray(10, &destroyOperation);
 
 	if (redo == NULL)
 	{
@@ -45,9 +37,6 @@ Service* createService(Repository* repository)
 	service->undo = undo;
 	service->redo = redo;
 	generateElems(service);
-	service->addFct = &addElemRepository;
-	service->removeFct = &deleteElemRepository;
-	service->updateFct = &updateElemRepository;
 	return service;
 }
 
@@ -64,25 +53,16 @@ void addElemService(Service* service, char* name, int concentration, int quantit
 	
 	Medicine* elem = createMedicine(name, concentration, quantity, price);
 
-	//function pointer undo redo
-	//Medicine* medicine = copyMedicine(elem);
-
 	addElemRepository(service->repository, elem);
 
 	//memento undo redo
 	saveUndo(service);//saves the new array in the undo array
 
-	//function pointer undo redo
-	//saveUndoOperation(service, medicine, "add");
-	//destroyMedicine(medicine);
 
 }
 
 int deleteElemService(Service* service, char* name, int concentration, int quantity)
 {
-	//function pointer undo redo
-	//Medicine* medicine = copyMedicine(getElemRepository(service->repository, name, concentration));
-	//setQuantity(medicine, quantity);
 
 	int res = deleteElemRepository(service->repository, name, concentration, quantity);
 	if (res == 1)
@@ -90,9 +70,6 @@ int deleteElemService(Service* service, char* name, int concentration, int quant
 		//memento undo redo
 		saveUndo(service);//saves the new array in the undo array
 
-		//function pointer undo redo
-		//saveUndoOperation(service, medicine, "remove");
-		//destroyMedicine(medicine);
 	}
 	
 	return res;
@@ -100,8 +77,6 @@ int deleteElemService(Service* service, char* name, int concentration, int quant
 
 int updateElemService(Service* service, char* name, int concentration, int quantity, int price)
 {
-	//function pointer undo redo
-	//Medicine* medicine = copyMedicine(getElemRepository(service->repository, name, concentration));
 
 	int res = updateElemRepository(service->repository, name, concentration, quantity, price);
 	if (res == 1)
@@ -109,10 +84,6 @@ int updateElemService(Service* service, char* name, int concentration, int quant
 
 		//memento undo redo
 		saveUndo(service);//saves the new array in the undo array
-
-		//function pointer undo redo
-		//saveUndoOperation(service, medicine, "update");
-		//destroyMedicine(medicine);
 	}
 	return res;
 
@@ -126,9 +97,6 @@ void emptyRedo(Service* service)
 
 	//memento undo redo
 	service->redo = createDynamicArray(10, &destroyDynamicArray);
-
-	//operation pointer undo redo
-	//service->redo = createDynamicArray(10, &destroyOperation);
 }
 
 
@@ -146,57 +114,6 @@ void saveUndo(Service* service)
 }
 
 
-
-/*
-* for function pointer undo redo
-* it saves the the undo for the last performed operation and empties the redo list
-*/
-void saveUndoOperation(Service* service, Medicine* medicine, char* operationType)
-{
-	Operation* operation = createOperation(medicine, operationType);
-	addElemToDynamicArray(service->undo, operation);
-	emptyRedo(service);
-}
-
-
-
-/*
-* for function pointer undo redo
-* it makes the undo/redo for add and creates a new operation that will be added to the redo/undo stack
-*/
-Operation* addOperation(Service* service, Medicine* medicine)
-{
-	service->removeFct(service->repository, getName(medicine), getConcentration(medicine), getQuantity(medicine));
-	Operation* newOperation = createOperation(medicine, "remove");
-	return newOperation;
-}
-
-
-/*
-* for function pointer undo redo
-* it makes the undo/redo for remove and creates a new operation that will be added to the redo/undo stack
-*/
-Operation* removeOperation(Service* service, Medicine* medicine)
-{
-	service->addFct(service->repository, copyMedicine(medicine));
-	Operation* newOperation = createOperation(medicine, "add");
-	return newOperation;
-}
-
-
-
-/*
-* for function pointer undo redo 
-* it makes the undo/redo for update and creates a new operation that will be added to the redo/undo stack
-*/
-Operation* updateOperation(Service* service, Medicine* medicine)
-{
-	Medicine* oldMedicine = getElemRepository(service->repository, getName(medicine), getConcentration(medicine));
-	Operation* newOperation = createOperation(oldMedicine, "update");
-	service->updateFct(service->repository, getName(medicine), getConcentration(medicine), getQuantity(medicine), getPrice(medicine));
-	return newOperation;
-}
-
 int undo(Service* service)
 {
 
@@ -211,25 +128,6 @@ int undo(Service* service)
 		return 1;
 	}
 	return 0;
-
-
-	//operation pointer undo
-	/*if (getSize(service->undo) == 0)
-		return 0;
-
-	Operation* lastOperation = getElem(service->undo, getSize(service->undo) - 1);
-	Medicine* medicine = getOperationMedicine(lastOperation);
-	Operation* newOperation = NULL;
-	if (strcmp(getOperationType(lastOperation), "add") == 0)
-		newOperation = addOperation(service, medicine);
-	if (strcmp(getOperationType(lastOperation), "remove") == 0)
-		newOperation = removeOperation(service, medicine);
-	if (strcmp(getOperationType(lastOperation), "update") == 0)
-		newOperation = updateOperation(service, medicine);
-	addElemToDynamicArray(service->redo, newOperation);
-	pop(service->undo);
-	return 1;
-	*/
 }
 
 int redo(Service* service)
@@ -246,25 +144,6 @@ int redo(Service* service)
 	}
 	return 0;
 
-
-	//operation pointer redo
-	/*if (getSize(service->redo) == 0)
-		return 0;
-	Operation* lastOperation = getElem(service->redo, getSize(service->redo) - 1);
-	Medicine* medicine = getOperationMedicine(lastOperation);
-	Operation* newOperation = NULL;
-	if (strcmp(getOperationType(lastOperation), "add") == 0)
-		newOperation = addOperation(service, medicine);
-	if (strcmp(getOperationType(lastOperation), "remove") == 0)
-	{
-		newOperation = removeOperation(service, medicine);
-	}
-	
-	if (strcmp(getOperationType(lastOperation), "update") == 0)
-		newOperation = updateOperation(service, medicine);
-	addElemToDynamicArray(service->undo, newOperation);
-	pop(service->redo);
-	return 1;*/
 }
 
 
