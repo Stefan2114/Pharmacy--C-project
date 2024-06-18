@@ -3,7 +3,7 @@
 
 ## A pharmacy application written in C language that manages the storage of the medicines!
 
-This project is an example that was build as a homework for one of my assignment in the second semester of my faculty. It's main objective was to make code a pharmacy aplication using my one dynamic vector implementation
+This project is an example that was build as a homework for one of my assignment in the second semester of my faculty. It's main objective was to make a pharmacy aplication using my own dynamic vector implementation
 
 
 ## Features:
