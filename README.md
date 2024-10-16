@@ -13,6 +13,7 @@ This project is an example that was build as a homework for one of my assignment
 
 ## Implementation:
 * Layered architecture
+* MVC design pattern
 * Errors handling
 * Dynamic memory allocation
 * Dynamic vector implementation using void pointer
